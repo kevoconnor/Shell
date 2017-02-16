@@ -8,12 +8,36 @@ Shell implementation
 
 */
 
-#include "stdio.h"
+#include <stdio.h>
+#include <unistd.h>
 
 int main( int argc, char * argv[ ] )
 {
 
-    printf( "Shell prompt \n" );
+    while( 1 )
+    {
+
+	char args[ 100 ];
+	
+	printf( "\n%% " );
+	fgets( args, 100, stdin );
+	
+	/*
+	switch( argv[ 1 ] )
+	{
+
+	    // case ls
+
+	    // case pwd
+
+  	    // case cat
+
+	} 
+	printf( "\n>" );
+	*/
+    }
+
+    //printf( "Shell prompt \n" );
 
     return 0;
 
