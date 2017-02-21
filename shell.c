@@ -19,13 +19,11 @@ int main( int argc, char * argv[ ] )
     while( 1 )
     {
 
-	//char * args;
-	char args[ 10 ];
+	char args[ 100 ];
 	int pid;
 	char * const envp[ ] = { NULL };
 
 	printf( "%% " );
-	//fgets( args, 10, stdin );
 	scanf( "%s", args );
 
 	// EXIT
@@ -53,75 +51,30 @@ int main( int argc, char * argv[ ] )
 	// VERSION
 	else if( strcmp( args, "version" ) == 0 )
 	{
-	    printf( "+----- Version 0.1.1 -----+\n+---- Kevin O\'Connor -----+\n+---- Revised 2/16/17 ----+\n" );
+	    printf( "+----- Version 0.1.1 -----+\n+---- Kevin O\'Connor -----+\n+---- Revised 2/20/17 ----+\n" );
 	}
 
-	// LS
-	else if( strcmp( args, "ls" ) == 0 )
-	{
-	    const char * path_name = "/bin/ls";
-	    char * const argv[ ] = { "/bin/ls", NULL, 0 };
-
-	    if( ( pid = fork( ) ) == 0 )
-	    {
-		// child process
-		//printf( "child process\n" );
-		execve( argv[ 0 ], argv, envp );
-	    }
-	    else if( pid > 0 )
-	    {
-		// parent process
-		//printf( "parent\n" );
-		waitpid( pid, NULL, 0 );
-	    }
-	    else
-	    {
-		printf( "error" );
-	    }
-	}
-
-	// DATE 
-	else if( strcmp( args, "date" ) == 0 )
-	{
-	    const char * path_name = "/bin/date";
-	    char * const argv[ ] = { "/bin/date", NULL, 0 };
-
-	    if( ( pid = fork( ) ) == 0 )
-	    {
-		execve( argv[ 0 ], argv, envp );
-	    }
-	    else if( pid > 0 )
-	    {
-		waitpid( pid, NULL, 0 );
-	    }
-	    else
-	    {
-		printf( "error" );
-	    }
-	}
-
-	// UPTIME
-	else if( strcmp( args, "uptime" ) == 0 )
-	{
-	    const char * path_name = "/usr/bin/uptime";
-	    char * const argv[ ] = { "/usr/bin/uptime", NULL, 0 };
-
-	    if( ( pid = fork( ) ) == 0 )
-	    {
-		execve( argv[ 0 ], argv, envp );
-	    }
-	    else if( pid > 0 )
-	    {
-		waitpid( pid, NULL, 0 );
-	    }
-	    else
-	    {
-		printf( "error" );
-	    }
-	}
+	// NOT BUILT-IN
 	else
 	{
-	    printf( "Command not found\n" );
+	    const char * path_name = args;
+	    char * const argv[ ] = { args, NULL, 0 };
+
+	    // TODO split args by space using strtok( )
+
+	    if( ( pid = fork( ) ) == 0 )
+	    {
+		execve( argv[ 0 ], argv, envp );
+		printf( "Command not found\n" );
+	    }
+	    else if( pid > 0 )
+	    {
+		waitpid( pid, NULL, 0 );
+	    }
+	    else
+	    {
+		printf( "Error" );
+	    }
 	}
 
     }
