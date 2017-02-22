@@ -8,10 +8,10 @@ Shell implementation
 
 */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
+#include "stdio.h" 
+#include "unistd.h"
+#include "stdlib.h"
+#include "string.h"
 
 int main( int argc, char * argv[ ] )
 {
@@ -24,23 +24,40 @@ int main( int argc, char * argv[ ] )
 	char * const envp[ ] = { NULL };
 
 	printf( "%% " );
-	scanf( "%s", args );
+	fgets( args, 100, stdin );
+	
+	// replace \n with \0
+	args[ strlen( args ) - 1 ] = '\0';
 
+	char * temp;
+	char * argv[ 10 ];
+	temp = strtok( args," " );
+	int i = 0;
+
+    	while( temp != NULL )
+    	{
+	    argv[ i++ ] = temp;
+    	    temp = strtok( NULL, " " );
+	    //i++;
+        }
+	
+	char * cmd = argv[ 0 ];
+	
 	// EXIT
-	if( strcmp( args, "exit" ) == 0 )
+	if( strcmp( cmd, "exit" ) == 0 )
 	{
 	    printf( "Exiting program\n" );
-	    return 0;
+	    exit( 0 );
 	}
 
 	// CD
-	else if ( strcmp( args, "cd" ) == 0 )
+	else if( strcmp( cmd, "cd" ) == 0 )
 	{
-	    chdir( "/Users/kevinoconnor/Desktop/School/COS421/shell/" );
+	    chdir( argv[ 1 ] );
 	}
 
 	// PWD
-	else if ( strcmp( args, "pwd" ) == 0 )
+	else if( strcmp( cmd, "pwd" ) == 0 )
 	{
 	    char * pwd;
 	    char buffer[ 100 ];
@@ -49,22 +66,19 @@ int main( int argc, char * argv[ ] )
 	}
 
 	// VERSION
-	else if( strcmp( args, "version" ) == 0 )
+	else if( strcmp( cmd, "version" ) == 0 )
 	{
-	    printf( "+----- Version 0.1.1 -----+\n+---- Kevin O\'Connor -----+\n+---- Revised 2/20/17 ----+\n" );
+	    printf( "+---- Version 0.2.3.0 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/22/17 ----+\n" );
 	}
 
 	// NOT BUILT-IN
 	else
 	{
-	    const char * path_name = args;
-	    char * const argv[ ] = { args, NULL, 0 };
-
-	    // TODO split args by space using strtok( )
-
+	    // TODO split argv by space using strtok( )
+	    
 	    if( ( pid = fork( ) ) == 0 )
 	    {
-		execve( argv[ 0 ], argv, envp );
+		execve( cmd, argv, envp );
 		printf( "Command not found\n" );
 	    }
 	    else if( pid > 0 )
@@ -80,5 +94,5 @@ int main( int argc, char * argv[ ] )
     }
 
     return 0;
-
+	
 }
