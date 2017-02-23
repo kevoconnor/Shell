@@ -38,6 +38,8 @@ int main( int argc, char ** argv )
 	    argv[ i++ ] = temp;
     	    temp = strtok( NULL, " " );
         }
+
+	argv[ i ] = NULL;
 	
 	char * cmd = argv[ 0 ];
 	
@@ -66,7 +68,7 @@ int main( int argc, char ** argv )
 	// VERSION
 	else if( strcmp( cmd, "version" ) == 0 )
 	{
-	    printf( "+---- Version 0.2.3.9 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/23/17 ----+\n" );
+	    printf( "+---- Version 0.2.4.0 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/23/17 ----+\n" );
 	}
 
 	// NOT BUILT-IN
@@ -86,11 +88,13 @@ int main( int argc, char ** argv )
         	    strcat( fullPath, cmd );
 		    
 		    execve( fullPath, argv, envp );
+		    //perror( "execve" );
 
         	    temp = strtok( NULL, ":" );
     		}
 
 		printf( "Command not found\n" );
+		exit( 0 );
 	    }
 	    else if( pid > 0 )
 	    {
