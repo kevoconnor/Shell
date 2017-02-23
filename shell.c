@@ -13,12 +13,11 @@ Shell implementation
 #include "stdlib.h"
 #include "string.h"
 
-int main( int argc, char * argv[ ] )
+int main( int argc, char ** argv )
 {
 
     while( 1 )
     {
-
 	char args[ 100 ];
 	int pid;
 	char * const envp[ ] = { NULL };
@@ -38,7 +37,6 @@ int main( int argc, char * argv[ ] )
     	{
 	    argv[ i++ ] = temp;
     	    temp = strtok( NULL, " " );
-	    //i++;
         }
 	
 	char * cmd = argv[ 0 ];
@@ -68,17 +66,30 @@ int main( int argc, char * argv[ ] )
 	// VERSION
 	else if( strcmp( cmd, "version" ) == 0 )
 	{
-	    printf( "+---- Version 0.2.3.0 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/22/17 ----+\n" );
+	    printf( "+---- Version 0.2.3.9 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/23/17 ----+\n" );
 	}
 
 	// NOT BUILT-IN
 	else
 	{
-	    // TODO split argv by space using strtok( )
-	    
 	    if( ( pid = fork( ) ) == 0 )
 	    {
-		execve( cmd, argv, envp );
+		char * path = getenv( "PATH" );
+    		char fullPath[ 100 ];
+    		char * temp;
+    		temp = strtok( path,":" );
+		
+    		while( temp != NULL )
+    		{
+		    strcpy( fullPath, temp );
+        	    strcat( fullPath, "/" );
+        	    strcat( fullPath, cmd );
+		    
+		    execve( fullPath, argv, envp );
+
+        	    temp = strtok( NULL, ":" );
+    		}
+
 		printf( "Command not found\n" );
 	    }
 	    else if( pid > 0 )
