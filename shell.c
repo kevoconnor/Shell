@@ -12,25 +12,44 @@ Shell implementation
 #include "unistd.h"
 #include "stdlib.h"
 #include "string.h"
+#include "signal.h"
+
+void signal_handler( int sig )
+{
+	
+    while( waitpid( -1, NULL, WNOHANG ) > 0 )
+    {
+	// Empty;
+    }
+
+}
 
 int main( int argc, char ** argv )
 {
 
+    int bg_proc = 0;
+
+    struct sigaction sig_action;
+    memset( &sig_action, 0, sizeof( sig_action ) );
+    sig_action.sa_handler = signal_handler;
+
+    sigaction( SIGCHLD, &sig_action, NULL );
+
     while( 1 )
     {
-	char args[ 100 ];
+	char args[ 256 ];
 	int pid;
 	char * const envp[ ] = { NULL };
 
 	printf( "%% " );
-	fgets( args, 100, stdin );
+	fgets( args, 256, stdin );
 	
 	// replace \n with \0
 	args[ strlen( args ) - 1 ] = '\0';
 
 	char * temp;
-	char * argv[ 10 ];
-	temp = strtok( args," " );
+	char * argv[ 32 ];
+	temp = strtok( args, " " );
 	int i = 0;
 
     	while( temp != NULL )
@@ -41,6 +60,12 @@ int main( int argc, char ** argv )
 
 	argv[ i ] = NULL;
 	
+	if( strcmp( argv[ i - 1 ], "&" ) == 0 )
+	{
+	    bg_proc = 1;
+	    argv[ i - 1 ] = NULL;
+	}
+
 	char * cmd = argv[ 0 ];
 	
 	// EXIT
@@ -53,22 +78,29 @@ int main( int argc, char ** argv )
 	// CD
 	else if( strcmp( cmd, "cd" ) == 0 )
 	{
-	    chdir( argv[ 1 ] );
+	    if( argv[ 1 ] != NULL )
+	    {
+	    	chdir( argv[ 1 ] );
+	    }
+	    else
+	    {
+		chdir( getenv( "HOME" ) );
+	    }
 	}
 
 	// PWD
 	else if( strcmp( cmd, "pwd" ) == 0 )
 	{
 	    char * pwd;
-	    char buffer[ 100 ];
-	    pwd = getcwd( buffer, 100 );
+	    char buffer[ 256 ];
+	    pwd = getcwd( buffer, 256 );
 	    printf( "%s\n", pwd );
 	}
 
 	// VERSION
 	else if( strcmp( cmd, "version" ) == 0 )
 	{
-	    printf( "+---- Version 0.2.4.0 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/23/17 ----+\n" );
+	    printf( "+---- Version 0.2.5.0 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/27/17 ----+\n" );
 	}
 
 	// NOT BUILT-IN
@@ -77,9 +109,9 @@ int main( int argc, char ** argv )
 	    if( ( pid = fork( ) ) == 0 )
 	    {
 		char * path = getenv( "PATH" );
-    		char fullPath[ 100 ];
+    		char fullPath[ 256 ];
     		char * temp;
-    		temp = strtok( path,":" );
+    		temp = strtok( path, ":" );
 		
     		while( temp != NULL )
     		{
@@ -98,7 +130,16 @@ int main( int argc, char ** argv )
 	    }
 	    else if( pid > 0 )
 	    {
-		waitpid( pid, NULL, 0 );
+		if( bg_proc )
+		{
+		    sleep( 1 );
+		}
+		else
+		{
+		    waitpid( pid, NULL, 0 );
+		}
+
+		bg_proc = 0;
 	    }
 	    else
 	    {
