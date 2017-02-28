@@ -37,21 +37,79 @@ int main( int argc, char ** argv )
 
     while( 1 )
     {
-	char args[ 256 ];
+	char _args[ 256 ];
 	int pid;
 	char * const envp[ ] = { NULL };
 
 	printf( "%% " );
-	fgets( args, 256, stdin );
+	fgets( _args, 256, stdin );
 	
-	// replace \n with \0
-	args[ strlen( args ) - 1 ] = '\0';
+	int arg_len = strlen( _args );
+	//printf( "arg_len: %d\n", arg_len );
+
+	// search for input/output redirection
+	char args[ 256 ];
+	int input = 0;
+	int output = 0;
+	int indices[ 10 ];
+	int idx = 0;	
+
+	// replace \n with \0 because of fgets formatting
+	_args[ arg_len - 1 ] = '\0';
+
+	for( int i = 0; i < arg_len; i++ )
+	{
+	    if( _args[ i ] == '<' )
+	    {
+		input++;
+		indices[ idx ] = i;
+		idx++;
+	    }
+	    else if( _args[ i ] == '>' )
+	    {
+		output++;
+	    }
+	}
+
+	if( input || output )
+	{
+	    int chevron = indices[ 0 ];
+
+	    char cat_file[ arg_len - ( chevron + 1 ) ];
+	    int cat_idx = 0;
+	
+	    for( int i = 0; i < chevron - 1; i++ )
+	    {
+		args[ i ] = _args[ i ];
+		//printf( "%c", _args[ i ] );
+	    }
+
+	    for( int j = chevron + 2; j < arg_len; j++ )
+	    {
+		cat_file[ cat_idx ] = _args[ j ];
+	    }
+	}
+	else
+	{
+	    //printf( "strlen( _args ): %d\n", strlen( _args ) );
+	    for( int k = 0; k < arg_len; k++ )
+	    {
+	    	args[ k ] = _args[ k ];
+	    }
+	}
+
+	/*printf( "strlen( args ): %d\n", strlen( args ) );
+	for( int l = 0; l < strlen( args ); l++ )
+	{
+	    printf( "args[ l ]: %c\n", args[ l ] );
+	}*/
 
 	char * temp;
 	char * argv[ 32 ];
 	temp = strtok( args, " " );
 	int i = 0;
 
+	// separate args into argument vector
     	while( temp != NULL )
     	{
 	    argv[ i++ ] = temp;
@@ -100,7 +158,7 @@ int main( int argc, char ** argv )
 	// VERSION
 	else if( strcmp( cmd, "version" ) == 0 )
 	{
-	    printf( "+---- Version 0.2.5.0 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/27/17 ----+\n" );
+	    printf( "+---- Version 0.2.5.1 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/28/17 ----+\n" );
 	}
 
 	// NOT BUILT-IN
