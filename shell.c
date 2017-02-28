@@ -1,11 +1,9 @@
 /*
-
 Kevin O'Connor
 February 2017
 
 COS421 Operation Systems
 Shell implementation
-
 */
 
 #include "stdio.h" 
@@ -13,6 +11,7 @@ Shell implementation
 #include "stdlib.h"
 #include "string.h"
 #include "signal.h"
+#include "fcntl.h"
 
 void signal_handler( int sig )
 {
@@ -37,89 +36,47 @@ int main( int argc, char ** argv )
 
     while( 1 )
     {
-	char _args[ 256 ];
+	char args[ 256 ];
 	int pid;
 	char * const envp[ ] = { NULL };
 
 	printf( "%% " );
-	fgets( _args, 256, stdin );
+	fgets( args, 256, stdin );
 	
-	int arg_len = strlen( _args );
-	//printf( "arg_len: %d\n", arg_len );
-
-	// search for input/output redirection
-	char args[ 256 ];
-	int input = 0;
-	int output = 0;
-	int indices[ 10 ];
-	int idx = 0;	
-
-	// replace \n with \0 because of fgets formatting
-	_args[ arg_len - 1 ] = '\0';
-
-	for( int i = 0; i < arg_len; i++ )
-	{
-	    if( _args[ i ] == '<' )
-	    {
-		input++;
-		indices[ idx ] = i;
-		idx++;
-	    }
-	    else if( _args[ i ] == '>' )
-	    {
-		output++;
-	    }
-	}
-
-	if( input || output )
-	{
-	    int chevron = indices[ 0 ];
-
-	    char cat_file[ arg_len - ( chevron + 1 ) ];
-	    int cat_idx = 0;
-	
-	    for( int i = 0; i < chevron - 1; i++ )
-	    {
-		args[ i ] = _args[ i ];
-		//printf( "%c", _args[ i ] );
-	    }
-
-	    for( int j = chevron + 2; j < arg_len; j++ )
-	    {
-		cat_file[ cat_idx ] = _args[ j ];
-		printf( "%c", cat_file[ cat_idx ] );
-		cat_idx++;
-	    }
-	    printf( "\n" );
-	}
-	else
-	{
-	    //printf( "strlen( _args ): %d\n", strlen( _args ) );
-	    for( int k = 0; k < arg_len; k++ )
-	    {
-	    	args[ k ] = _args[ k ];
-	    }
-	}
-
-	/*printf( "strlen( args ): %d\n", strlen( args ) );
-	for( int l = 0; l < strlen( args ); l++ )
-	{
-	    printf( "args[ l ]: %c\n", args[ l ] );
-	}*/
+	// replace \n with \0
+	args[ strlen( args ) - 1 ] = '\0';
 
 	char * temp;
 	char * argv[ 32 ];
 	temp = strtok( args, " " );
 	int i = 0;
 
-	// separate args into argument vector
     	while( temp != NULL )
     	{
 	    argv[ i++ ] = temp;
     	    temp = strtok( NULL, " " );
         }
 
+	int argv_len = i;
 	argv[ i ] = NULL;
+	char * infilep;
+	char * outfilep;
+
+	int input = 0;
+	int output = 0;
+
+	for( int j = 0; j < argv_len; j++ )
+	{
+	    if( strcmp( argv[ j ], "<" ) == 0 )
+	    {
+		input++;
+	    }
+	    else if( strcmp( argv[ j ], ">" ) == 0 )
+	    {
+		output++;
+	    }
+	    //printf( "%s\n", argv[ j ] );
+	}
 	
 	if( strcmp( argv[ i - 1 ], "&" ) == 0 )
 	{
@@ -179,6 +136,23 @@ int main( int argc, char ** argv )
 		    strcpy( fullPath, temp );
         	    strcat( fullPath, "/" );
         	    strcat( fullPath, cmd );
+
+		    if( input )
+		    {
+			infilep = argv[ argv_len ];
+			//printf( "%s\n", infilep );
+			int file = open( infilep, O_CREAT | O_TRUNC | O_WRONLY, 0600 );
+			dup2( file, STDIN_FILENO );
+			close( file );
+		    }
+		    else if( output )
+		    {
+			outfilep = argv[ argv_len ];
+			//printf( "%s\n", infilep );
+			int file = open( outfilep, O_CREAT | O_TRUNC | O_WRONLY, 0600 );
+			dup2( file, STDOUT_FILENO );
+			close( file );
+		    }
 		    
 		    execve( fullPath, argv, envp );
 		    //perror( "execve" );
