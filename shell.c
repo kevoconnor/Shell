@@ -87,7 +87,10 @@ int main( int argc, char ** argv )
 	    for( int j = chevron + 2; j < arg_len; j++ )
 	    {
 		cat_file[ cat_idx ] = _args[ j ];
+		printf( "%c", cat_file[ cat_idx ] );
+		cat_idx++;
 	    }
+	    printf( "\n" );
 	}
 	else
 	{
@@ -158,7 +161,7 @@ int main( int argc, char ** argv )
 	// VERSION
 	else if( strcmp( cmd, "version" ) == 0 )
 	{
-	    printf( "+---- Version 0.2.5.1 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/28/17 ----+\n" );
+	    printf( "+---- Version 0.2.5.2 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/28/17 ----+\n" );
 	}
 
 	// NOT BUILT-IN
