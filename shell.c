@@ -118,7 +118,7 @@ int main( int argc, char ** argv )
 	// VERSION
 	else if( strcmp( cmd, "version" ) == 0 )
 	{
-	    printf( "+---- Version 0.2.5.2 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/28/17 ----+\n" );
+	    printf( "+---- Version 0.2.6.5 -----+\n+---- Kevin  O\'Connor -----+\n+---- Revised 2/28/17 ----+\n" );
 	}
 
 	// NOT BUILT-IN
@@ -139,19 +139,22 @@ int main( int argc, char ** argv )
 
 		    if( input )
 		    {
-			infilep = argv[ argv_len ];
-			//printf( "%s\n", infilep );
-			int file = open( infilep, O_CREAT | O_TRUNC | O_WRONLY, 0600 );
-			dup2( file, STDIN_FILENO );
-			close( file );
+			infilep = argv[ argv_len - 1 ];
+			argv[ argv_len - 2 ] = NULL;
+			argv[ argv_len - 1 ] = NULL;
+			printf( "infilep: %s, argv[ argv_len - 1 ]: %s", infilep, argv[ argv_len - 1 ] );
+			int file_d = open( infilep, O_RDONLY, 0600 );
+			dup2( file_d, STDIN_FILENO );
+			close( file_d );
 		    }
 		    else if( output )
 		    {
-			outfilep = argv[ argv_len ];
-			//printf( "%s\n", infilep );
-			int file = open( outfilep, O_CREAT | O_TRUNC | O_WRONLY, 0600 );
-			dup2( file, STDOUT_FILENO );
-			close( file );
+			outfilep = argv[ argv_len - 1 ];
+			argv[ argv_len - 2 ] = NULL;
+			argv[ argv_len - 1 ] = NULL;
+			int file_d = open( outfilep, O_CREAT | O_TRUNC | O_WRONLY, 0600 );
+			dup2( file_d, STDOUT_FILENO );
+			close( file_d );
 		    }
 		    
 		    execve( fullPath, argv, envp );
